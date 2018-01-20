@@ -5,7 +5,6 @@ import org.json.simple.JSONObject;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Paths;
 
 public class FileManager {
     public static void write(String reportFilePath, JSONObject jsonObject) throws Exception {

@@ -24,11 +24,12 @@ public class SIV {
     private MetaData fileMetaData = new MetaData();
     private Scanner in = new Scanner(System.in);
     JSONObject verificationJSONObject;
+    JSONParser jsonParser = new JSONParser();
 
     public void initialize(String monitoringDirectoryPath, String verificationFilePath, String reportFilePath, String hashFunction) throws Exception {
         long startTime = System.currentTimeMillis();
 
-        //check if the monitorin path is a Directory
+        //check if the monitoring path is a Directory
         if (!exists(monitoringDirectoryPath))
             throw new DirectoryNotFoundException("The monitoring directory does not exist");
 

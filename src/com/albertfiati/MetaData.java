@@ -29,9 +29,9 @@ public class MetaData {
             if (!System.getProperty("os.name").toLowerCase().equals("windows 10")) {
                 PosixFileAttributes posixFileAttributes = Files.readAttributes(filePath, PosixFileAttributes.class);
 
-                filePropertyObject.put("owner", posixFileAttributes.owner());
-                filePropertyObject.put("group", posixFileAttributes.group());
-                filePropertyObject.put("permissions", posixFileAttributes.permissions());
+                filePropertyObject.put("owner", posixFileAttributes.owner().toString());
+                filePropertyObject.put("group", posixFileAttributes.group().toString());
+                filePropertyObject.put("permissions", posixFileAttributes.permissions().toString());
             }
 
             filePropertyObject.put("size", fileAttributes.size());

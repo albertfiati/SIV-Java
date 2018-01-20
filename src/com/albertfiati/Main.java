@@ -5,7 +5,7 @@ import java.io.IOException;
 public class Main {
 
     public static void main(String[] args) throws IOException {
-        String monitoringDirectoryPath = "/Users/optimistic/Downloads/old stuff";
+        String monitoringDirectoryPath = "/Users/optimistic/Downloads/test";
 //        String monitoringDirectoryPath = "C:\\Users\\Optimistic\\Downloads";
 
         String reportFilePath = "/Users/optimistic/Downloads/report.txt";
@@ -20,8 +20,9 @@ public class Main {
 
         try {
             siv.initialize(monitoringDirectoryPath, verificationFilePath, reportFilePath, hashFunction);
-            //siv.verify(verificationFilePath, reportFilePath);
+            siv.verify(verificationFilePath, reportFilePath);
         } catch (Exception exception) {
+            exception.printStackTrace();
             System.out.print(exception.getMessage());
         }
     }
