@@ -9,6 +9,7 @@ import org.json.simple.parser.JSONParser;
 
 import java.io.File;
 import java.io.FileReader;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -72,15 +73,8 @@ public class SIV {
         FileManager.write(verificationFilePath, monitoringDirectoryJsonObject);
 
         //write report file
-        JSONObject reportJsonObject = new JSONObject();
-        reportJsonObject.put("monitoring_directory", monitoringDirectoryPath);
-        reportJsonObject.put("verification_directory", verificationFilePath);
-        reportJsonObject.put("no_of_directories_parsed", noOfDirectoriesParsed);
-        reportJsonObject.put("no_of_files_parsed", noOfFilesParsed);
-        reportJsonObject.put("completion_time", (System.nanoTime() - startTime) / 1000000000.0);
-        reportJsonObject.put("hash_function", hashFunction);
+        writeReportFile(verificationFilePath, reportFilePath, startTime, monitoringDirectoryPath);
 
-        FileManager.write(reportFilePath, reportJsonObject);
         print("Done initializing SIV");
     }
 
@@ -89,11 +83,11 @@ public class SIV {
 
         //check if the verification file exists
         if (!exists(verificationFilePath))
-            throw new InvalidFileException("Verification file does not exist");
+            throw new InvalidFileException("Verification file path does not exist");
 
         //check if the report file exists
         if (!exists(reportFilePath))
-            throw new InvalidFileException("Verification file does not exist");
+            throw new InvalidFileException("Report file  path does not exist");
 
         //read the report file into a json object
         JSONParser jsonParser = new JSONParser();
@@ -133,18 +127,38 @@ public class SIV {
         FileManager.write(verificationFilePath, monitoringDirectoryJsonObject);
 
         //write report file
-        JSONObject reportJsonObject = new JSONObject();
-        reportJsonObject.put("monitoring_directory", monitoringDirectoryPath);
-        reportJsonObject.put("verification_directory", verificationFilePath);
-        reportJsonObject.put("no_of_directories_parsed", noOfDirectoriesParsed);
-        reportJsonObject.put("no_of_files_parsed", noOfFilesParsed);
-        reportJsonObject.put("no_of_warnings_issued", noOfWarningsIssued);
-        reportJsonObject.put("completion_time", (System.nanoTime() - startTime) / 1000000000.0);
-        reportJsonObject.put("hash_function", hashFunction);
-
-        FileManager.write(reportFilePath, reportJsonObject);
+        writeReportFile(verificationFilePath, reportFilePath, startTime, monitoringDirectoryPath);
 
         print("Done verifying SIV");
+    }
+
+    private void writeReportFile(String verificationFilePath, String reportFilePath, long startTime, String monitoringDirectoryPath) throws Exception {
+        JSONObject reportJsonObject = new JSONObject();
+        DecimalFormat df = new DecimalFormat("####0.00");
+
+        reportJsonObject.put("hash_function", hashFunction);
+        reportJsonObject.put("no_of_files_parsed", noOfFilesParsed);
+        reportJsonObject.put("no_of_warnings_issued", noOfWarningsIssued);
+        reportJsonObject.put("verification_directory", verificationFilePath);
+        reportJsonObject.put("monitoring_directory", monitoringDirectoryPath);
+        reportJsonObject.put("no_of_directories_parsed", noOfDirectoriesParsed);
+        reportJsonObject.put("completion_time", df.format((System.nanoTime() - startTime) / 1000000000.0));
+
+        FileManager.write(reportFilePath, reportJsonObject);
+        printReport(reportJsonObject);
+    }
+
+    private void printReport(JSONObject reportJSONObject) {
+        System.out.println("");
+        System.out.println("Printing report to screen");
+        System.out.println("-------------------------");
+        System.out.println("");
+
+        Iterable<String> keys = reportJSONObject.keySet();
+
+        for (String key : keys) {
+            System.out.println(String.format("%s : %s", key, reportJSONObject.get(key)));
+        }
     }
 
     private boolean overwriteFile(String fileType) throws Exception {
