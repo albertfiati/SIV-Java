@@ -27,7 +27,7 @@ public class SIV {
     JSONParser jsonParser = new JSONParser();
 
     public void initialize(String monitoringDirectoryPath, String verificationFilePath, String reportFilePath, String hashFunction) throws Exception {
-        long startTime = System.currentTimeMillis();
+        long startTime = System.nanoTime();
 
         //check if the monitoring path is a Directory
         if (!exists(monitoringDirectoryPath))
@@ -77,16 +77,15 @@ public class SIV {
         reportJsonObject.put("verification_directory", verificationFilePath);
         reportJsonObject.put("no_of_directories_parsed", noOfDirectoriesParsed);
         reportJsonObject.put("no_of_files_parsed", noOfFilesParsed);
-        reportJsonObject.put("completion_time", (System.currentTimeMillis() - startTime) / 1000);
+        reportJsonObject.put("completion_time", (System.nanoTime() - startTime) / 1000000000.0);
         reportJsonObject.put("hash_function", hashFunction);
 
         FileManager.write(reportFilePath, reportJsonObject);
-
         print("Done initializing SIV");
     }
 
     public void verify(String verificationFilePath, String reportFilePath) throws Exception {
-        long startTime = System.currentTimeMillis();
+        long startTime = System.nanoTime();
 
         //check if the verification file exists
         if (!exists(verificationFilePath))
@@ -127,6 +126,9 @@ public class SIV {
         //System.out.println("I am here");
         parseMonitoringDirectory(monitoringDirectoryPath, "verify");
 
+        //check for all deleted files
+        checkForDeletedFiles();
+
         //write verification file
         FileManager.write(verificationFilePath, monitoringDirectoryJsonObject);
 
@@ -137,7 +139,7 @@ public class SIV {
         reportJsonObject.put("no_of_directories_parsed", noOfDirectoriesParsed);
         reportJsonObject.put("no_of_files_parsed", noOfFilesParsed);
         reportJsonObject.put("no_of_warnings_issued", noOfWarningsIssued);
-        reportJsonObject.put("completion_time", (System.currentTimeMillis() - startTime) / 1000);
+        reportJsonObject.put("completion_time", (System.nanoTime() - startTime) / 1000000000.0);
         reportJsonObject.put("hash_function", hashFunction);
 
         FileManager.write(reportFilePath, reportJsonObject);
@@ -210,11 +212,21 @@ public class SIV {
 
             if (file.isDirectory()) {
                 noOfDirectoriesParsed++;
+
+                int hashCode = file.getAbsolutePath().hashCode();
+                JSONObject fileMetaData = this.fileMetaData.parse(file, hashFunction, true);
+
                 parseMonitoringDirectory(file.getPath(), mode);
+
+                if (mode == "init") {
+                    monitoringDirectoryJsonObject.put(hashCode, fileMetaData);
+                } else {
+                    verifySystemIntegrity(hashCode, fileMetaData);
+                }
             } else {
                 noOfFilesParsed++;
                 int hashCode = file.getAbsolutePath().hashCode();
-                JSONObject fileMetaData = this.fileMetaData.parse(file, hashFunction);
+                JSONObject fileMetaData = this.fileMetaData.parse(file, hashFunction, false);
 
                 if (mode == "init") {
                     monitoringDirectoryJsonObject.put(hashCode, fileMetaData);
@@ -248,14 +260,35 @@ public class SIV {
             if (updateMap.size() > 0) {
                 noOfWarningsIssued += updateMap.size();
                 updateMap.put("status", "modified");
+                updateMap.put("alert", "warning");
                 fileMetaData.putAll(updateMap);
             }
         } else {
             noOfWarningsIssued++;
             fileMetaData.put("status", "new");
+            fileMetaData.put("alert", "warning");
         }
 
         monitoringDirectoryJsonObject.put(hashCode, fileMetaData);
+    }
+
+    private void checkForDeletedFiles() {
+        Iterable<String> hashCodes = verificationJSONObject.keySet();
+
+        JSONObject deletedFileJSON,
+                readData;
+
+        for (String hashCode : hashCodes) {
+            readData = (JSONObject) monitoringDirectoryJsonObject.get(Integer.parseInt(hashCode));
+
+            if (readData == null) {
+                noOfWarningsIssued++;
+                deletedFileJSON = (JSONObject) verificationJSONObject.get(hashCode);
+                deletedFileJSON.put("status", "deleted");
+                deletedFileJSON.put("alert", "warning");
+                monitoringDirectoryJsonObject.put(hashCode, deletedFileJSON);
+            }
+        }
     }
 
 

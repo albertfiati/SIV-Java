@@ -7,7 +7,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 public class MessageDigest {
-    private String hashFunction;
 
     /*
      *   Generate the hash of the file content
@@ -17,8 +16,8 @@ public class MessageDigest {
      *
      *   @return String digest
      * */
-    public String generateHashOfFile(String filePath, String hashFunction) throws Exception {
-        hashFunction = hashFunction;
+    public String generateHashOfFile(File file, String hashFunction) throws Exception {
+        //hashFunction = hashFunction;
 
         byte[] digest;
         java.security.MessageDigest messageDigest = null;
@@ -34,7 +33,7 @@ public class MessageDigest {
                 throw new InvalidHashFunctionException();
         }
 
-        return generateChecksum(messageDigest, new File(filePath));
+        return generateChecksum(messageDigest, file);
     }
 
     /*
