@@ -149,16 +149,21 @@ public class SIV {
     }
 
     private void printReport(JSONObject reportJSONObject) {
-        System.out.println("");
-        System.out.println("Printing report to screen");
-        System.out.println("-------------------------");
-        System.out.println("");
+        print("");
+        print("Printing report to screen");
+        print("-------------------------");
+        print("");
 
         Iterable<String> keys = reportJSONObject.keySet();
 
         for (String key : keys) {
-            System.out.println(String.format("%s : %s", key, reportJSONObject.get(key)));
+            if (key.equals("completion_time"))
+                print(String.format("%s : %s %s", key, reportJSONObject.get(key), " secs"));
+            else
+                print(String.format("%s : %s", key, reportJSONObject.get(key)));
         }
+
+        print("");
     }
 
     private boolean overwriteFile(String fileType) throws Exception {

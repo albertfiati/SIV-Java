@@ -94,7 +94,7 @@ public class Main {
 
     //loading params into the the needed variables for SIV
     private static void readOptions(String[] args) throws InsufficientArguementsException {
-        if (args.length == 0 || (args.length == 1 && args[0] != "-h"))
+        if (args.length == 0 || (args.length == 1 && !args[0].equals("-h")))
             throw new InsufficientArguementsException();
 
         for (int i = 0; i < args.length; i++) {
