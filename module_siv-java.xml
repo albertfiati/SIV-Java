@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_siv-java" default="compile.module.siv-java">
+  <dirname property="module.siv-java.basedir" file="${ant.file.module_siv-java}"/>
+  
+  <property name="module.jdk.home.siv-java" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.siv-java" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.siv-java" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.siv-java" value="-encoding UTF-8 -source 9 -target 9 ${compiler.args}"/>
+  
+  <property name="siv-java.output.dir" value="${module.siv-java.basedir}/out/production/SIV-Java"/>
+  <property name="siv-java.testoutput.dir" value="${module.siv-java.basedir}/out/test/SIV-Java"/>
+  
+  <path id="siv-java.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="siv-java.module.production.classpath">
+    <path refid="${module.jdk.classpath.siv-java}"/>
+    <path refid="library.com.googlecode.json-simple:json-simple:1.1.1.classpath"/>
+  </path>
+  
+  <path id="siv-java.runtime.production.module.classpath">
+    <pathelement location="${siv-java.output.dir}"/>
+    <path refid="library.com.googlecode.json-simple:json-simple:1.1.1.classpath"/>
+  </path>
+  
+  <path id="siv-java.module.classpath">
+    <path refid="${module.jdk.classpath.siv-java}"/>
+    <pathelement location="${siv-java.output.dir}"/>
+    <path refid="library.com.googlecode.json-simple:json-simple:1.1.1.classpath"/>
+  </path>
+  
+  <path id="siv-java.runtime.module.classpath">
+    <pathelement location="${siv-java.testoutput.dir}"/>
+    <pathelement location="${siv-java.output.dir}"/>
+    <path refid="library.com.googlecode.json-simple:json-simple:1.1.1.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.siv-java">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.siv-java">
+    <patternset refid="excluded.from.module.siv-java"/>
+  </patternset>
+  
+  <path id="siv-java.module.sourcepath">
+    <dirset dir="${module.siv-java.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.siv-java" depends="compile.module.siv-java.production,compile.module.siv-java.tests" description="Compile module SIV-Java"/>
+  
+  <target name="compile.module.siv-java.production" depends="register.custom.compilers" description="Compile module SIV-Java; production classes">
+    <mkdir dir="${siv-java.output.dir}"/>
+    <javac2 destdir="${siv-java.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.siv-java}/javac">
+      <compilerarg line="${compiler.args.siv-java}"/>
+      <bootclasspath refid="siv-java.module.bootclasspath"/>
+      <classpath refid="siv-java.module.production.classpath"/>
+      <src refid="siv-java.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.siv-java"/>
+    </javac2>
+    
+    <copy todir="${siv-java.output.dir}">
+      <fileset dir="${module.siv-java.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.siv-java.tests" depends="register.custom.compilers,compile.module.siv-java.production" description="compile module SIV-Java; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.siv-java" description="cleanup module">
+    <delete dir="${siv-java.output.dir}"/>
+    <delete dir="${siv-java.testoutput.dir}"/>
+  </target>
+</project>

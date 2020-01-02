@@ -22,11 +22,11 @@ public class MessageDigest {
         byte[] digest;
         java.security.MessageDigest messageDigest = null;
 
-        switch (hashFunction.toUpperCase()) {
-            case "SHA-1":
+        switch (hashFunction) {
+            case "SHA1":
                 messageDigest = java.security.MessageDigest.getInstance("SHA-1");
                 break;
-            case "MD-5":
+            case "MD5":
                 messageDigest = java.security.MessageDigest.getInstance("MD5");
                 break;
             default:

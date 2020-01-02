@@ -7,13 +7,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Main {
-    public static String mode = "help";
-    public static String hashFunction = "";
-    public static String reportFilePath = "";
-    public static String verificationFilePath = "";
-    public static String monitoringDirectoryPath = "";
+    enum Modes {
+        INIT,
+        VERIFY
+    }
 
-    public static Map<String, String> allowedModes;
+    private static String mode = "help";
+    private static String hashFunction = null;
+    private static String reportFilePath = null;
+    private static String verificationFilePath = null;
+    private static String monitoringDirectoryPath = null;
+
+    // initializing hashmap
+    private static Map<String, String> allowedModes;
 
     static {
         allowedModes = new HashMap<>();
@@ -23,51 +29,58 @@ public class Main {
     }
 
     public static void main(String[] args) throws IOException {
-        /*
-        String[] args = new String[9];
-        args[0] = "-i";
-        args[1] = "-D";
-        args[2] = "/Users/optimistic/Downloads/linux-4.16.5";
-        args[3] = "-V";
-        args[4] = "/Users/optimistic/Downloads/results/verification.json";
-        args[5] = "-R";
-        args[6] = "/Users/optimistic/Downloads/results/report.json";
-        args[7] = "-H";
-        args[8] = "sha-1";
-        readOptions(args);
-        */
-
         System.out.println("");
+
+        /*String[] opts = new String[9];
+        opts[0] = "-v";
+        opts[1] = "-D";
+        opts[2] = "/Users/optimistic/Desktop/sivmon";
+        opts[3] = "-V";
+        opts[4] = "/Users/optimistic/Desktop/verification.json";
+        opts[5] = "-R";
+        opts[6] = "/Users/optimistic/Desktop/report.json";
+        opts[7] = "-H";
+        opts[8] = "md-5";*/
 
         //create an instance of the SIV object
         SIV siv = new SIV();
 
         try {
-            //read arguments submitted and parse them
+            // read arguments submitted and parse them
             readOptions(args);
+            //readOptions(opts);
+        } catch (InsufficientArguementsException ex) {
+            System.out.println("Reading options Error: Insufficient options\n");
+            printHelp();
+        }
 
-            System.out.println(String.format("SIV mode: %s", mode));
+        try {
+            if (reportFilePath != null && verificationFilePath != null && monitoringDirectoryPath != null) {
+                if (!reportFilePath.equals("") && !verificationFilePath.equals("") && !monitoringDirectoryPath.equals("")) {
+                    Modes selectedMode = Modes.valueOf(mode.toUpperCase());
+                    System.out.println(String.format("SIV mode: %s", selectedMode));
 
-            switch (mode.toLowerCase()) {
-                case "init":
-                    if (reportFilePath != "" && verificationFilePath != "" && monitoringDirectoryPath != "" && hashFunction != "")
-                        siv.initialize(monitoringDirectoryPath, verificationFilePath, reportFilePath, hashFunction);
-                    else
-                        printHelp();
+                    switch (selectedMode) {
+                        case INIT:
+                            if (!hashFunction.equals(""))
+                                siv.initialize(monitoringDirectoryPath, verificationFilePath, reportFilePath, hashFunction);
+                            else
+                                printHelp();
 
-                    break;
-                case "verify":
-                    if (reportFilePath != "" && verificationFilePath != "" && monitoringDirectoryPath != "")
-                        siv.verify(verificationFilePath, reportFilePath);
-                    else {
-                        printHelp();
+                            break;
+                        case VERIFY:
+                            siv.verify(monitoringDirectoryPath, verificationFilePath, reportFilePath, hashFunction);
+                            break;
+                        default:
+                            printHelp();
+                            break;
                     }
-                    break;
-                default:
-                    printHelp();
-                    break;
+                }
+            } else {
+                printHelp();
             }
         } catch (Exception exception) {
+            // exception.printStackTrace();
             System.out.println("ERROR:: " + exception.getMessage());
         }
 
@@ -85,34 +98,38 @@ public class Main {
         System.out.println("    siv -i -D monitoring_directory_path -V verification_file_path -R report_file_path -H hash_function");
         System.out.println("");
         System.out.println("    The SIV supports the following hash functions:");
-        System.out.println("      sha-a");
+        System.out.println("      sha-1");
         System.out.println("      md-5");
         System.out.println("");
         System.out.println("  To run in verification mode run");
-        System.out.println("    siv -v -D monitoring_directory_path -V verification_file_path -R report_file_path");
+        System.out.println("    siv -v -D monitoring_directory_path -V verification_file_path -R report_file_path -H hash_function");
     }
 
     //loading params into the the needed variables for SIV
     private static void readOptions(String[] args) throws InsufficientArguementsException {
+        System.out.println("Reading options ");
+
         if (args.length == 0 || (args.length == 1 && !args[0].equals("-h")))
             throw new InsufficientArguementsException();
 
         for (int i = 0; i < args.length; i++) {
-            //setting mode
-            if (allowedModes.containsKey(args[i])) {
-                mode = allowedModes.get(args[i]);
-            } else if (args[i].equals("-D")) {
-                monitoringDirectoryPath = args[i + 1];
-                i++;
-            } else if (args[i].equals("-V")) {
-                verificationFilePath = args[i + 1];
-                i++;
-            } else if (args[i].equals("-R")) {
-                reportFilePath = args[i + 1];
-                i++;
-            } else if (args[i].equals("-H")) {
-                hashFunction = args[i + 1];
-                i++;
+            if (args[i] != null) {
+                //setting mode
+                if (allowedModes.containsKey(args[i])) {
+                    mode = allowedModes.get(args[i]);
+                } else if (args[i].equals("-D")) {
+                    monitoringDirectoryPath = args[i + 1];
+                    i++;
+                } else if (args[i].equals("-V")) {
+                    verificationFilePath = args[i + 1];
+                    i++;
+                } else if (args[i].equals("-R")) {
+                    reportFilePath = args[i + 1];
+                    i++;
+                } else if (args[i].equals("-H")) {
+                    hashFunction = args[i + 1];
+                    i++;
+                }
             }
         }
     }
