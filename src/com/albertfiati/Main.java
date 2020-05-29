@@ -102,7 +102,7 @@ public class Main {
         System.out.println("      md-5");
         System.out.println("");
         System.out.println("  To run in verification mode run");
-        System.out.println("    siv -v -D monitoring_directory_path -V verification_file_path -R report_file_path -H hash_function");
+        System.out.println("    siv -v -D monitoring_directory_path -V verification_file_path -R report_file_path");
     }
 
     //loading params into the the needed variables for SIV

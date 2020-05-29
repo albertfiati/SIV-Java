@@ -294,11 +294,11 @@ public class SIV {
     private void verifySystemIntegrity(int hashCode, JSONObject fileMetaData) {
         monitoringDirectoryJsonObject.put(hashCode, fileMetaData);
         JSONObject fileDataInVerificationFile = (JSONObject) verificationJSONObject.get(String.format("%d", hashCode));
+        Map<String, String> updateMap = new HashMap();
 
         if (fileDataInVerificationFile != null) {
             // verifying metadata changes
             Iterable<String> keys = fileMetaData.keySet();
-            Map<String, String> updateMap = new HashMap();
 
             for (String key : keys) {
                 if (!fileMetaData.get(key).toString().equals(fileDataInVerificationFile.get(key).toString())) {
@@ -309,18 +309,19 @@ public class SIV {
             if (updateMap.size() > 0) {
                 noOfWarningsIssued += updateMap.size();
                 updateMap.put("status", "modified");
-                updateMap.put("alert", "warning");
-                fileMetaData.putAll(updateMap);
+                updateMap.put("file_name", fileMetaData.get("file_name").toString());
+                updateMap.put("path", fileMetaData.get("file_name").toString());
 
-                modifiedMonitoringDirectoryJsonObject.put(hashCode, fileMetaData);
+                modifiedMonitoringDirectoryJsonObject.put(hashCode, updateMap);
             }
         } else {
             // recording a new file
             noOfWarningsIssued++;
-            fileMetaData.put("status", "new");
-            fileMetaData.put("alert", "warning");
+            updateMap.put("status", "new");
+            updateMap.put("file_name", fileMetaData.get("file_name").toString());
+            updateMap.put("path", fileMetaData.get("file_name").toString());
 
-            modifiedMonitoringDirectoryJsonObject.put(hashCode, fileMetaData);
+            modifiedMonitoringDirectoryJsonObject.put(hashCode, updateMap);
         }
     }
 
@@ -328,6 +329,7 @@ public class SIV {
         Iterable<String> hashCodes = verificationJSONObject.keySet();
 
         JSONObject deletedFileJSON, readData;
+        Map<String, String> updateMap = new HashMap();
 
         for (String hashCode : hashCodes) {
             if (!hashCode.equals("hash_function")) {
@@ -336,9 +338,13 @@ public class SIV {
                 if (readData == null) {
                     noOfWarningsIssued++;
                     deletedFileJSON = (JSONObject) verificationJSONObject.get(hashCode);
-                    deletedFileJSON.put("status", "deleted");
-                    deletedFileJSON.put("alert", "warning");
-                    modifiedMonitoringDirectoryJsonObject.put(hashCode, deletedFileJSON);
+
+                    //remove other keys
+
+                    updateMap.put("status", "deleted");
+                    updateMap.put("file_name", deletedFileJSON.get("file_name").toString());
+                    updateMap.put("path", deletedFileJSON.get("file_name").toString());
+                    modifiedMonitoringDirectoryJsonObject.put(hashCode, updateMap);
                 }
             }
         }
